@@ -653,6 +653,13 @@ function emptyTrash(){
 function toggleDropdown(){
   const menu=gid('dropMenu'),arrow=gid('dropArrow'),overlay=gid('dropOverlay');
   const isOpen=menu.style.display!=='none';
+  if(!isOpen){
+    // position below the name wrap
+    const wrap=gid('headerNameWrap');
+    const rect=wrap.getBoundingClientRect();
+    menu.style.top=(rect.bottom+6)+'px';
+    menu.style.left=rect.left+'px';
+  }
   menu.style.display=isOpen?'none':'block';
   overlay.style.display=isOpen?'none':'block';
   arrow.classList.toggle('open',!isOpen);
