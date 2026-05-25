@@ -3,18 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>效率CC · 個人助理</title>
-
-<!-- PWA 設定 -->
+<title>效率CC</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="效率CC">
 <meta name="theme-color" content="#c4daf0">
-
-<!-- 內嵌 SVG 圖示 (apple-touch-icon) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSJ1cmwoI2cpIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYzRkYWYwIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN2FiMGUwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+MuDwvdGV4dD48L3N2Zz4=">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -29,7 +24,6 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 .app{width:100%;max-width:520px;min-height:100vh;display:flex;flex-direction:column}
 .bg-dots{position:fixed;top:0;left:50%;transform:translateX(-50%);width:520px;height:100vh;background-image:radial-gradient(circle,rgba(122,176,224,0.06) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0}
 
-/* Header */
 .header{position:relative;z-index:1;padding:18px 16px 0;display:flex;align-items:center;gap:10px}
 .avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#c4daf0,#7ab0e0);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 14px rgba(122,176,224,0.28);flex-shrink:0}
 .header-name{font-weight:700;font-size:15px;white-space:nowrap}
@@ -39,38 +33,70 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 .chip-t{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(122,176,224,0.4)}
 .chip-e{background:var(--lav);color:#fff;box-shadow:0 2px 8px rgba(176,160,212,0.4)}
 
-/* Tabs */
 .tabs{position:relative;z-index:1;display:flex;margin:16px 16px 0;background:var(--sand);border-radius:14px;padding:4px;gap:3px}
 .tab{flex:1;padding:9px 0;border:none;border-radius:11px;background:transparent;color:var(--text3);font-weight:500;font-size:12.5px;cursor:pointer;transition:all .22s;font-family:inherit}
 .tab.active{background:var(--surface);color:var(--blue);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
 
-/* Content */
 .content{position:relative;z-index:1;flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 0 0}
 .panel{flex:1;overflow-y:auto;padding:0 16px 20px;display:flex;flex-direction:column}
 .panel::-webkit-scrollbar{width:3px}
 .panel::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:3px}
 
-/* Todos */
-.qadd{display:flex;gap:8px;margin-bottom:16px}
-.qadd input,.qadd select{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:inherit;transition:border-color .2s}
-.qadd input{flex:1}
+/* Uncat banner */
+.uncat-banner{background:#fff8e8;border:1.5px solid #e8c060;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#7a6020}
+.uncat-banner strong{font-weight:700}
+
+/* Todo add area */
+.todo-add-area{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:13px 14px;margin-bottom:16px}
+.qadd{display:flex;gap:8px;margin-bottom:10px}
+.qadd input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:inherit;transition:border-color .2s}
 .qadd input:focus{border-color:var(--blue-mid)}
 .qadd input::placeholder{color:var(--text3)}
-.qadd select{width:78px}
-.qadd select option{background:#fff}
-.plus-btn{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#c4daf0,#7ab0e0);border:none;color:var(--text);font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(122,176,224,0.3)}
-.pri-sec{margin-bottom:14px}
-.pri-lbl{font-size:11px;font-weight:700;margin-bottom:7px;letter-spacing:.8px}
-.todo-card{display:flex;align-items:center;gap:10px;padding:11px 13px;margin-bottom:7px;background:var(--surface);border-radius:14px;border:1.5px solid var(--border)}
-.todo-check{width:22px;height:22px;border-radius:7px;border:2px solid;background:transparent;cursor:pointer;flex-shrink:0}
-.todo-title{flex:1;font-size:13.5px}
-.overdue{color:var(--red);font-size:10px;font-weight:700;margin-left:4px}
-.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:19px;padding:0;line-height:1}
+.qadd-row2{display:flex;gap:6px;align-items:center}
+.cat-opts-inline{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.todo-cat-btn{border:1.5px solid var(--border);border-radius:20px;padding:5px 11px;font-size:11.5px;cursor:pointer;background:var(--surface);font-family:inherit;color:var(--text2);transition:all .15s}
+.todo-cat-btn.work.sel{background:#daeaf8;border-color:var(--blue);color:#3a6090;font-weight:600}
+.todo-cat-btn.tjm.sel{background:#ece6f8;border-color:var(--lav);color:#6050a0;font-weight:600}
+.todo-cat-btn.other.sel{background:#e4ecf8;border-color:#90a8c8;color:#506080;font-weight:600}
+.todo-cat-btn.none.sel{background:#fff8e8;border-color:#e8c060;color:#7a6020;font-weight:600}
+.pri-sel{display:flex;gap:5px}
+.pri-btn{border:1.5px solid var(--border);border-radius:10px;padding:5px 9px;font-size:12px;cursor:pointer;background:var(--surface);font-family:inherit;color:var(--text2)}
+.pri-btn.sel{font-weight:700;color:#fff}
+.pri-btn.high.sel{background:#e07880;border-color:#e07880}
+.pri-btn.medium.sel{background:#e8c060;border-color:#e8c060;color:var(--text)}
+.pri-btn.low.sel{background:#88c0a4;border-color:#88c0a4}
+.add-todo-btn{width:100%;margin-top:10px;padding:9px;border-radius:10px;background:linear-gradient(135deg,#c4daf0,#7ab0e0);border:none;color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(122,176,224,0.25)}
+
+/* Todo sections */
+.todo-section{margin-bottom:16px}
+.todo-sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.todo-sec-title{font-size:12px;font-weight:700;letter-spacing:.5px}
+.todo-sec-count{background:var(--sand);border-radius:20px;padding:1px 8px;font-size:11px;color:var(--text3);font-weight:600}
+.todo-card{display:flex;align-items:center;gap:10px;padding:10px 13px;margin-bottom:6px;background:var(--surface);border-radius:13px;border:1.5px solid var(--border)}
+.todo-check{width:21px;height:21px;border-radius:7px;border:2px solid;background:transparent;cursor:pointer;flex-shrink:0}
+.todo-body{flex:1;min-width:0}
+.todo-title{font-size:13px;color:var(--text)}
+.todo-badges{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
+.badge{border-radius:20px;padding:1px 7px;font-size:10px;font-weight:600}
+.badge-work{background:#daeaf8;color:#3a6090}
+.badge-tjm{background:#ece6f8;color:#6050a0}
+.badge-other{background:#e4ecf8;color:#506080}
+.badge-none{background:#fff8e8;color:#7a6020}
+.badge-high{background:#fde8e8;color:#b05060}
+.badge-medium{background:#fdf5dc;color:#906020}
+.badge-low{background:#e0f2e8;color:#3a7050}
+.overdue{color:var(--red);font-size:10px;font-weight:700}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:19px;padding:0;line-height:1;flex-shrink:0}
 .del-btn:hover{color:var(--red)}
 .done-sec summary{font-size:12px;color:var(--text3);cursor:pointer;padding:6px 0}
 .done-item{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:5px;background:var(--surface);border-radius:10px;opacity:.4}
 .done-title{flex:1;font-size:13px;text-decoration:line-through;color:var(--text2)}
 .empty{text-align:center;color:var(--text3);margin-top:32px;font-size:13px;line-height:2.2}
+
+/* Filter tabs for todos */
+.todo-filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tfilter{border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11.5px;cursor:pointer;background:var(--surface);font-family:inherit;color:var(--text2)}
+.tfilter.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
 
 /* Calendar */
 .ev-form{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px}
@@ -119,18 +145,15 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 .note-search{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
 .note-search:focus{border-color:var(--blue-mid)}
 .note-search::placeholder{color:var(--text3)}
-.note-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
-.note-card:hover{border-color:var(--blue-mid)}
-.note-card-title{font-size:13.5px;font-weight:600;margin-bottom:4px;color:var(--text)}
+.note-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer}
+.note-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.note-card-title{font-size:13.5px;font-weight:600;margin-bottom:4px}
 .note-card-preview{font-size:12px;color:var(--text3);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .note-card-meta{font-size:10.5px;color:var(--text3);margin-top:6px}
-.note-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-
-/* Note editor */
-.note-editor{display:none;flex-direction:column;flex:1}
-.note-editor.open{display:flex}
 .note-list-wrap{display:flex;flex-direction:column;flex:1}
 .note-list-wrap.hidden{display:none}
+.note-editor{display:none;flex-direction:column;flex:1}
+.note-editor.open{display:flex}
 .editor-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .back-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);padding:0;line-height:1}
 .note-title-inp{flex:1;background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:6px 0;font-size:16px;font-weight:700;color:var(--text);outline:none;font-family:inherit}
@@ -141,6 +164,20 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 .editor-actions{display:flex;gap:8px;margin-top:10px}
 .save-btn{flex:1;padding:10px;border-radius:10px;background:linear-gradient(135deg,#c4daf0,#7ab0e0);border:none;color:var(--text);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
 .discard-btn{padding:10px 18px;border-radius:10px;background:var(--surface);border:1.5px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit}
+/* Trash */
+.trash-toggle{background:none;border:none;font-size:13px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:8px;font-family:inherit;display:flex;align-items:center;gap:4px}
+.trash-toggle:hover{color:var(--red)}
+.trash-badge{background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700}
+.trash-section{background:#fff5f5;border:1.5px solid #f5d0d0;border-radius:14px;padding:12px 14px;margin-top:10px}
+.trash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.trash-title{font-size:12px;font-weight:700;color:var(--red)}
+.empty-trash-btn{background:none;border:1.5px solid #f5a0a0;border-radius:8px;padding:3px 10px;font-size:11px;color:var(--red);cursor:pointer;font-family:inherit}
+.trash-card{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;background:#fff;border-radius:11px;border:1.5px solid #f5d0d0;opacity:.75}
+.trash-card-body{flex:1;min-width:0}
+.trash-card-title{font-size:13px;color:var(--text2);text-decoration:line-through}
+.trash-card-date{font-size:10px;color:var(--text3);margin-top:2px}
+.restore-btn{background:none;border:1.5px solid var(--blue-mid);border-radius:8px;padding:3px 8px;font-size:11px;color:var(--blue);cursor:pointer;font-family:inherit;white-space:nowrap}
+.perm-del-btn{background:none;border:none;color:#e0a0a0;cursor:pointer;font-size:17px;padding:0 2px;line-height:1}
 
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
@@ -149,11 +186,10 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 <body>
 <div class="bg-dots"></div>
 <div class="app">
-
   <div class="header">
     <div class="avatar">🌸</div>
     <div>
-      <div class="header-name">效率CC · 個人助理</div>
+      <div class="header-name">效率CC</div>
       <div class="header-date" id="hDate"></div>
     </div>
     <div class="chips">
@@ -171,15 +207,44 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
   <div class="content">
     <!-- TODOS -->
     <div class="panel" id="p-todos">
-      <div class="qadd" style="margin-top:4px">
-        <input id="ti" placeholder="新增待辦事項..." onkeydown="if(event.key==='Enter')addTM()">
-        <select id="tp">
-          <option value="high">🔴 高</option>
-          <option value="medium" selected>🟡 中</option>
-          <option value="low">🟢 低</option>
-        </select>
-        <button class="plus-btn" onclick="addTM()">＋</button>
+      <!-- Uncat warning -->
+      <div id="uncatBanner" class="uncat-banner" style="display:none">
+        ⚠️ 你有 <strong id="uncatCount">0</strong> 個待辦還沒有分類，記得補上喔！
       </div>
+
+      <!-- Add area -->
+      <div class="todo-add-area">
+        <div class="qadd">
+          <input id="ti" placeholder="新增待辦事項..." onkeydown="if(event.key==='Enter')addTM()">
+        </div>
+        <div class="qadd-row2">
+          <div class="cat-opts-inline">
+            <button type="button" class="todo-cat-btn work" data-c="work" onclick="selTCat('work')">💼 Work</button>
+            <button type="button" class="todo-cat-btn tjm" data-c="tjm" onclick="selTCat('tjm')">🏠 TJM</button>
+            <button type="button" class="todo-cat-btn other" data-c="other" onclick="selTCat('other')">📌 Other</button>
+            <button type="button" class="todo-cat-btn none sel" data-c="" onclick="selTCat('')">— 待定</button>
+          </div>
+        </div>
+        <div class="qadd-row2" style="margin-top:8px">
+          <div class="pri-sel">
+            <button type="button" class="pri-btn high" data-p="high" onclick="selTPri('high')">🔴</button>
+            <button type="button" class="pri-btn medium sel" data-p="medium" onclick="selTPri('medium')">🟡</button>
+            <button type="button" class="pri-btn low" data-p="low" onclick="selTPri('low')">🟢</button>
+          </div>
+          <span style="font-size:11px;color:var(--text3);margin-left:6px" id="priLabel">中 優先</span>
+        </div>
+        <button class="add-todo-btn" onclick="addTM()">＋ 新增</button>
+      </div>
+
+      <!-- Filter -->
+      <div class="todo-filters">
+        <button class="tfilter active" onclick="setTFilter('all')">全部</button>
+        <button class="tfilter" onclick="setTFilter('work')">💼 Work</button>
+        <button class="tfilter" onclick="setTFilter('tjm')">🏠 TJM</button>
+        <button class="tfilter" onclick="setTFilter('other')">📌 Other</button>
+        <button class="tfilter" onclick="setTFilter('none')">— 待定</button>
+      </div>
+
       <div id="tCon"></div>
     </div>
 
@@ -226,8 +291,18 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
         <div class="notes-toolbar">
           <button class="note-new-btn" onclick="openEditor(null)">＋ 新增筆記</button>
           <input class="note-search" id="noteSearch" placeholder="搜尋筆記..." oninput="rNotes()">
+          <button class="trash-toggle" onclick="toggleTrash()" id="trashToggle">🗑️ <span id="trashBadgeWrap"></span></button>
         </div>
         <div id="nCon"></div>
+        <div id="trashSection" style="display:none">
+          <div class="trash-section">
+            <div class="trash-header">
+              <div class="trash-title">🗑️ 垃圾桶</div>
+              <button class="empty-trash-btn" onclick="emptyTrash()">全部清除</button>
+            </div>
+            <div id="trashCon"></div>
+          </div>
+        </div>
       </div>
       <div class="note-editor" id="noteEditor">
         <div class="editor-header">
@@ -245,15 +320,20 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 </div>
 
 <script>
-const ST='cc_todos_m',SE='cc_events_m',SN='cc_notes_m';
+const ST='cc_todos_v3',SE='cc_events_m',SN='cc_notes_m',STR='cc_trash_m';
 const PC={high:'#e07880',medium:'#e8c060',low:'#88c0a4'};
-const PL={high:'🔴 高',medium:'🟡 中',low:'🟢 低'};
-const CAT_LABEL={work:'💼 Work',personal:'🏠 TJM',other:'📌 Other'};
-const CAT_CLASS={work:'cat-work',personal:'cat-personal',other:'cat-other'};
-let todos=[],events=[],notes=[],selCatVal='work',filterCatVal='all',editingNoteId=null;
+const PL={high:'高',medium:'中',low:'低'};
+const CAT_EV={work:'💼 Work',personal:'🏠 TJM',other:'📌 Other'};
+const CAT_EV_CLS={work:'cat-work',personal:'cat-personal',other:'cat-other'};
+const TCAT={work:'💼 Work',tjm:'🏠 TJM',other:'📌 Other','':'— 待定'};
+const TCAT_BADGE={work:'badge-work',tjm:'badge-tjm',other:'badge-other','':'badge-none'};
+
+let todos=[],events=[],notes=[],trash=[],selEvCat='work',filterEvCat='all';
+let selTCatVal='',selTPriVal='medium',todoFilter='all',editingNoteId=null,showTrash=false;
 try{todos=JSON.parse(localStorage.getItem(ST)||'[]')}catch{}
 try{events=JSON.parse(localStorage.getItem(SE)||'[]')}catch{}
 try{notes=JSON.parse(localStorage.getItem(SN)||'[]')}catch{}
+try{trash=JSON.parse(localStorage.getItem(STR)||'[]')}catch{}
 
 const today=new Date().toISOString().slice(0,10);
 document.getElementById('eDate').value=today;
@@ -265,6 +345,7 @@ function saveAll(){
   localStorage.setItem(ST,JSON.stringify(todos));
   localStorage.setItem(SE,JSON.stringify(events));
   localStorage.setItem(SN,JSON.stringify(notes));
+  localStorage.setItem(STR,JSON.stringify(trash));
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function timeAgo(ts){
@@ -287,6 +368,12 @@ function chips(){
   gid('cTodo').textContent=todos.filter(t=>!t.done).length+' 待辦';
   gid('cEv').textContent=events.filter(e=>e.date===today).length+' 今日';
 }
+function checkUncat(){
+  const n=todos.filter(t=>!t.done&&t.cat==='').length;
+  const b=gid('uncatBanner');
+  if(n>0){b.style.display='flex';gid('uncatCount').textContent=n;}
+  else{b.style.display='none';}
+}
 
 let cur='todos';
 function go(t){
@@ -295,17 +382,84 @@ function go(t){
     gid('p-'+k).style.display=k===t?'flex':'none';
     document.querySelectorAll('.tab')[i].classList.toggle('active',k===t);
   });
-  if(t==='todos')rTodos();
+  if(t==='todos'){rTodos();checkUncat();}
   if(t==='cal')rCal();
   if(t==='notes'){closeEditor(true);rNotes();}
 }
 
+// Todo cat/pri selectors
+function selTCat(cat){
+  selTCatVal=cat;
+  document.querySelectorAll('.todo-cat-btn').forEach(b=>{b.classList.toggle('sel',b.dataset.c===cat)});
+}
+function selTPri(pri){
+  selTPriVal=pri;
+  document.querySelectorAll('.pri-btn').forEach(b=>{b.classList.toggle('sel',b.dataset.p===pri)});
+  gid('priLabel').textContent=PL[pri]+' 優先';
+}
+function setTFilter(f){
+  todoFilter=f;
+  document.querySelectorAll('.tfilter').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes("'"+f+"'"));
+  });
+  rTodos();
+}
+
+// TODOS
+function addTM(){
+  const inp=gid('ti');
+  if(!inp.value.trim())return;
+  todos.unshift({id:genId(),title:inp.value.trim(),priority:selTPriVal,cat:selTCatVal,done:false,created:Date.now()});
+  inp.value='';saveAll();chips();checkUncat();rTodos();
+}
+function rTodos(){
+  const c=gid('tCon');
+  let pend=todos.filter(t=>!t.done);
+  if(todoFilter!=='all') pend=pend.filter(t=>(todoFilter==='none'?t.cat==='':t.cat===todoFilter));
+  const done=todos.filter(t=>t.done);
+  if(!pend.length&&!done.length){c.innerHTML='<div class="empty">🎉 沒有待辦事項<br>太棒了！</div>';return}
+  let h='';
+  if(!pend.length)h+='<div class="empty" style="margin-bottom:12px">🎉 這個分類沒有待辦！</div>';
+  ['high','medium','low'].forEach(p=>{
+    const items=pend.filter(t=>t.priority===p);
+    if(!items.length)return;
+    h+=`<div class="todo-section">
+      <div class="todo-sec-hdr">
+        <div class="todo-sec-title" style="color:${PC[p]}">${p==='high'?'🔴':'🟡'.repeat(p==='medium'?1:0)||'🟢'} ${PL[p]} 優先</div>
+        <div class="todo-sec-count">${items.length}</div>
+      </div>`;
+    items.forEach(t=>{
+      const d=Math.floor((Date.now()-t.created)/86400000);
+      const od=d>=3?`<span class="overdue">⚠️ ${d}天未處理</span>`:'';
+      const catBadge=`<span class="badge ${TCAT_BADGE[t.cat]}">${TCAT[t.cat]}</span>`;
+      h+=`<div class="todo-card" style="border-left:3px solid ${PC[p]}">
+        <button class="todo-check" style="border-color:${PC[p]}" onclick="doneT('${t.id}')"></button>
+        <div class="todo-body">
+          <div class="todo-title">${esc(t.title)}</div>
+          <div class="todo-badges">${catBadge}<span class="badge" style="background:var(--sand);color:var(--text3)">${new Date(t.created).toLocaleDateString("zh-TW",{month:"short",day:"numeric"})}</span>${od}</div>
+        </div>
+        <button class="del-btn" onclick="delT('${t.id}')">×</button>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  if(todoFilter==='all'&&done.length){
+    h+=`<details class="done-sec"><summary>已完成 (${done.length})</summary>`;
+    done.forEach(t=>{h+=`<div class="done-item"><span>✅</span><div class="done-title">${esc(t.title)}</div><button class="del-btn" onclick="delT('${t.id}')">×</button></div>`;});
+    h+='</details>';
+  }
+  c.innerHTML=h;
+}
+function doneT(id){todos=todos.map(t=>t.id===id?{...t,done:true}:t);saveAll();chips();checkUncat();rTodos()}
+function delT(id){todos=todos.filter(t=>t.id!==id);saveAll();chips();checkUncat();rTodos()}
+
+// CALENDAR
 function selCat(cat){
-  selCatVal=cat;
+  selEvCat=cat;
   document.querySelectorAll('#catSel .cat-opt').forEach(b=>{b.classList.toggle('selected',b.dataset.cat===cat)});
 }
 function filterCat(cat){
-  filterCatVal=cat;
+  filterEvCat=cat;
   document.querySelectorAll('.filter-btn').forEach(b=>{
     b.classList.toggle('active',b.getAttribute('onclick').includes("'"+cat+"'"));
   });
@@ -316,50 +470,10 @@ function exportICS(ev){
   const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//效率CC//EN\r\nBEGIN:VEVENT\r\nUID:${genId()}@cc\r\nDTSTAMP:${d}T${t}Z\r\nDTSTART:${d}T${t}\r\nSUMMARY:${ev.title}\r\nDESCRIPTION:${ev.note||''}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=ev.title+'.ics';a.click();
 }
-
-// TODOS
-function addTM(){
-  const inp=gid('ti'),pri=gid('tp').value;
-  if(!inp.value.trim())return;
-  todos.unshift({id:genId(),title:inp.value.trim(),priority:pri,done:false,created:Date.now()});
-  inp.value='';saveAll();chips();rTodos();
-}
-function rTodos(){
-  const c=gid('tCon');
-  const pend=todos.filter(t=>!t.done),done=todos.filter(t=>t.done);
-  if(!pend.length&&!done.length){c.innerHTML='<div class="empty">🎉 沒有待辦事項<br>太棒了！</div>';return}
-  let h='';
-  if(!pend.length)h+='<div class="empty">🎉 全部完成了！</div>';
-  ['high','medium','low'].forEach(p=>{
-    const items=pend.filter(t=>t.priority===p);
-    if(!items.length)return;
-    h+=`<div class="pri-sec"><div class="pri-lbl" style="color:${PC[p]}">${PL[p]} 優先</div>`;
-    items.forEach(t=>{
-      const d=Math.floor((Date.now()-t.created)/86400000);
-      const od=d>=3?`<span class="overdue">⚠️ 已 ${d} 天</span>`:'';
-      h+=`<div class="todo-card" style="border-left:3px solid ${PC[p]}">
-        <button class="todo-check" style="border-color:${PC[p]}" onclick="doneT('${t.id}')"></button>
-        <div class="todo-title">${esc(t.title)}${od}</div>
-        <button class="del-btn" onclick="delT('${t.id}')">×</button>
-      </div>`;
-    });
-    h+='</div>';
-  });
-  if(done.length){
-    h+=`<details class="done-sec"><summary>已完成 (${done.length})</summary>`;
-    done.forEach(t=>{h+=`<div class="done-item"><span>✅</span><div class="done-title">${esc(t.title)}</div><button class="del-btn" onclick="delT('${t.id}')">×</button></div>`;});
-    h+='</details>';
-  }
-  c.innerHTML=h;
-}
-function doneT(id){todos=todos.map(t=>t.id===id?{...t,done:true}:t);saveAll();chips();rTodos()}
-function delT(id){todos=todos.filter(t=>t.id!==id);saveAll();chips();rTodos()}
-
-// CALENDAR
 function addEM(){
   const title=gid('eTitle').value.trim();
   if(!title)return;
-  const ev={id:genId(),title,date:gid('eDate').value,time:gid('eTime').value,note:gid('eNote').value,category:selCatVal,remind:gid('eRemind').checked,remindMin:parseInt(gid('eRemindMin').value),created:Date.now()};
+  const ev={id:genId(),title,date:gid('eDate').value,time:gid('eTime').value,note:gid('eNote').value,category:selEvCat,remind:gid('eRemind').checked,remindMin:parseInt(gid('eRemindMin').value),created:Date.now()};
   events=[...events,ev].sort((a,b)=>a.date.localeCompare(b.date));
   scheduleNotif(ev);
   gid('eTitle').value='';gid('eNote').value='';gid('eRemind').checked=false;
@@ -367,7 +481,7 @@ function addEM(){
 }
 function rCal(){
   const c=gid('eCon');
-  let fl=filterCatVal==='all'?events:events.filter(e=>e.category===filterCatVal);
+  let fl=filterEvCat==='all'?events:events.filter(e=>e.category===filterEvCat);
   if(!fl.length){c.innerHTML='<div class="empty">📅 還沒有任何行程</div>';return}
   const tE=fl.filter(e=>e.date===today),up=fl.filter(e=>e.date>today),past=fl.filter(e=>e.date<today);
   let h='';
@@ -377,14 +491,12 @@ function rCal(){
   c.innerHTML=h;
 }
 function eHTML(ev,cls){
-  const d=new Date(ev.date+'T00:00:00');
-  const col=cls==='today'?'var(--blue)':'var(--lav)';
-  const cat=ev.category||'work';
+  const d=new Date(ev.date+'T00:00:00'),col=cls==='today'?'var(--blue)':'var(--lav)',cat=ev.category||'work';
   return`<div class="ev-card ${cls}">
     <div class="ev-date"><div class="ev-day" style="color:${col}">${d.getDate()}</div><div class="ev-wd">${d.toLocaleDateString('zh-TW',{weekday:'short'})}</div></div>
     <div class="ev-info">
       <div class="ev-title">${ev.remind?'🔔 ':''}${esc(ev.title)}</div>
-      <span class="cat-tag ${CAT_CLASS[cat]}">${CAT_LABEL[cat]}</span>
+      <span class="cat-tag ${CAT_EV_CLS[cat]}">${CAT_EV[cat]}</span>
       <div class="ev-meta">${d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}${ev.time?' · '+ev.time:''}${ev.note?' · '+esc(ev.note):''}</div>
     </div>
     <div class="ev-actions">
@@ -398,51 +510,92 @@ function delE(id){events=events.filter(e=>e.id!==id);saveAll();chips();rCal()}
 // NOTES
 function rNotes(){
   const c=gid('nCon'),q=gid('noteSearch').value.trim().toLowerCase();
-  const filtered=q?notes.filter(n=>(n.title+n.body).toLowerCase().includes(q)):notes;
-  if(!filtered.length){
-    c.innerHTML=`<div class="empty">${q?'🔍 找不到相關筆記':'📝 還沒有任何筆記<br>點上方新增第一篇吧！'}</div>`;return;
-  }
-  c.innerHTML=filtered.map(n=>`
-    <div class="note-card" onclick="openEditor('${n.id}')">
+  const fl=q?notes.filter(n=>(n.title+n.body).toLowerCase().includes(q)):notes;
+  if(!fl.length){c.innerHTML=`<div class="empty">${q?'🔍 找不到相關筆記':'📝 還沒有任何筆記<br>點上方新增第一篇吧！'}</div>`;return}
+  c.innerHTML=fl.map(n=>`
+    <div class="note-card" id="nc-${n.id}" onclick="openEditor('${n.id}')">
       <div class="note-card-top">
         <div class="note-card-title">${esc(n.title||'（無標題）')}</div>
-        <button class="del-btn" onclick="event.stopPropagation();delNote('${n.id}')">×</button>
+        <button class="del-btn" id="nd-${n.id}" type="button">×</button>
       </div>
       <div class="note-card-preview">${esc(n.body||'').replace(/\n/g,' ')||'空白筆記'}</div>
-      <div class="note-card-meta">${timeAgo(n.updated)}</div>
+      <div class="note-card-meta">📅 ${new Date(n.created).toLocaleDateString("zh-TW",{year:"numeric",month:"short",day:"numeric"})} · 更新 ${timeAgo(n.updated)}</div>
     </div>`).join('');
+  fl.forEach(n=>{
+    const btn=document.getElementById('nd-'+n.id);
+    if(btn)btn.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();delNote(n.id);});
+  });
 }
 function openEditor(id){
   editingNoteId=id;
-  const note=id?notes.find(n=>n.id===id):null;
-  gid('nTitleInp').value=note?note.title:'';
-  gid('nBodyInp').value=note?note.body:'';
-  gid('noteListWrap').classList.add('hidden');
-  gid('noteEditor').classList.add('open');
-  setTimeout(()=>gid(note&&note.body?'nBodyInp':'nTitleInp').focus(),50);
+  const n=id?notes.find(x=>x.id===id):null;
+  gid('nTitleInp').value=n?n.title:'';gid('nBodyInp').value=n?n.body:'';
+  gid('noteListWrap').classList.add('hidden');gid('noteEditor').classList.add('open');
+  setTimeout(()=>gid(n&&n.body?'nBodyInp':'nTitleInp').focus(),50);
 }
 function closeEditor(silent){
-  gid('noteEditor').classList.remove('open');
-  gid('noteListWrap').classList.remove('hidden');
+  gid('noteEditor').classList.remove('open');gid('noteListWrap').classList.remove('hidden');
   if(!silent)rNotes();
 }
 function saveNote(){
-  const title=gid('nTitleInp').value.trim();
-  const body=gid('nBodyInp').value.trim();
+  const title=gid('nTitleInp').value.trim(),body=gid('nBodyInp').value.trim();
   if(!title&&!body){closeEditor();return}
-  if(editingNoteId){
-    notes=notes.map(n=>n.id===editingNoteId?{...n,title,body,updated:Date.now()}:n);
-  }else{
-    notes.unshift({id:genId(),title,body,created:Date.now(),updated:Date.now()});
-  }
+  if(editingNoteId){notes=notes.map(n=>n.id===editingNoteId?{...n,title,body,updated:Date.now()}:n);}
+  else{notes.unshift({id:genId(),title,body,created:Date.now(),updated:Date.now()});}
   saveAll();closeEditor();
 }
 function delNote(id){
-  if(!confirm('刪除這篇筆記？'))return;
-  notes=notes.filter(n=>n.id!==id);saveAll();rNotes();
+  if(!confirm('移到垃圾桶？'))return;
+  const n=notes.find(x=>x.id===id);
+  if(n){trash.unshift({...n,deletedAt:Date.now()});}
+  notes=notes.filter(n=>n.id!==id);
+  saveAll();rNotes();updateTrashBadge();
+}
+function toggleTrash(){
+  showTrash=!showTrash;
+  gid('trashSection').style.display=showTrash?'block':'none';
+  if(showTrash)rTrash();
+}
+function updateTrashBadge(){
+  const w=gid('trashBadgeWrap');
+  w.innerHTML=trash.length>0?`<span class="trash-badge">${trash.length}</span>`:'';
+}
+function rTrash(){
+  const c=gid('trashCon');
+  if(!trash.length){c.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0">垃圾桶是空的</div>';return}
+  c.innerHTML=trash.map(n=>`
+    <div class="trash-card" id="tc-${n.id}">
+      <div class="trash-card-body">
+        <div class="trash-card-title">${esc(n.title||'（無標題）')}</div>
+        <div class="trash-card-date">刪除於 ${timeAgo(n.deletedAt)}</div>
+      </div>
+      <button class="restore-btn" id="tr-${n.id}">還原</button>
+      <button class="perm-del-btn" id="tp-${n.id}">×</button>
+    </div>`).join('');
+  trash.forEach(n=>{
+    const rb=document.getElementById('tr-'+n.id);
+    const pb=document.getElementById('tp-'+n.id);
+    if(rb)rb.addEventListener('click',()=>restoreNote(n.id));
+    if(pb)pb.addEventListener('click',()=>permDelNote(n.id));
+  });
+}
+function restoreNote(id){
+  const n=trash.find(x=>x.id===id);
+  if(n){const{deletedAt,...rest}=n;notes.unshift(rest);}
+  trash=trash.filter(x=>x.id!==id);
+  saveAll();rNotes();rTrash();updateTrashBadge();
+}
+function permDelNote(id){
+  if(!confirm('永久刪除？此動作無法復原。'))return;
+  trash=trash.filter(x=>x.id!==id);
+  saveAll();rTrash();updateTrashBadge();
+}
+function emptyTrash(){
+  if(!confirm('清空垃圾桶？所有筆記將永久刪除。'))return;
+  trash=[];saveAll();rTrash();updateTrashBadge();
 }
 
-chips();rTodos();scheduleAll();
+chips();rTodos();checkUncat();scheduleAll();updateTrashBadge();
 </script>
 </body>
 </html>
