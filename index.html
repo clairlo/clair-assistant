@@ -189,10 +189,37 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
+/* Backup modal */
+.backup-overlay{position:fixed;inset:0;background:rgba(58,58,82,0.35);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.backup-modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:520px;box-shadow:0 -4px 30px rgba(0,0,0,0.1)}
+.backup-title{font-size:15px;font-weight:700;margin-bottom:5px}
+.backup-sub{font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6}
+.bk-btn{width:100%;padding:13px;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none;margin-bottom:10px}
+.bk-export{background:linear-gradient(135deg,#c4daf0,#7ab0e0);color:var(--text)}
+.bk-import{background:var(--surface);border:1.5px solid var(--border);color:var(--text2)}
+.bk-close{background:var(--sand);color:var(--text3);font-weight:500;margin-bottom:0}
+.bk-note{font-size:11px;color:var(--text3);text-align:center;margin-top:12px;line-height:1.6}
+/* backup btn in header */
+.backup-icon{background:none;border:none;font-size:18px;cursor:pointer;padding:4px;opacity:.6;transition:opacity .2s}
+.backup-icon:hover{opacity:1}
 </style>
 </head>
 <body>
 <div class="bg-dots"></div>
+
+<!-- Backup Modal -->
+<div class="backup-overlay" id="backupOverlay" style="display:none" onclick="if(event.target===this)closeBackup()">
+  <div class="backup-modal">
+    <div class="backup-title">💾 資料備份與還原</div>
+    <div class="backup-sub">匯出備份可保存所有待辦、行程和筆記。<br>更新網頁後用匯入還原，資料不會消失。</div>
+    <button class="bk-btn bk-export" onclick="exportBackup()">⬇️ 匯出備份（下載 JSON）</button>
+    <button class="bk-btn bk-import" onclick="gid('importFile').click()">⬆️ 匯入備份（還原資料）</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    <button class="bk-btn bk-close" onclick="closeBackup()">關閉</button>
+    <div class="bk-note">⚠️ 匯入會覆蓋目前所有資料，請先匯出備份</div>
+  </div>
+</div>
+
 <div class="app">
   <div class="header">
     <div class="avatar">🌸</div>
@@ -203,6 +230,7 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
     <div class="chips">
       <div class="chip chip-t" id="cTodo">0 待辦</div>
       <div class="chip chip-e" id="cEv">0 今日</div>
+      <button class="backup-icon" onclick="openBackup()" title="備份">💾</button>
     </div>
   </div>
 
@@ -619,6 +647,36 @@ function permDelNote(id){
 function emptyTrash(){
   if(!confirm('清空垃圾桶？所有筆記將永久刪除。'))return;
   trash=[];saveAll();rTrash();updateTrashBadge();
+}
+
+// BACKUP & RESTORE
+function openBackup(){gid('backupOverlay').style.display='flex'}
+function closeBackup(){gid('backupOverlay').style.display='none'}
+function exportBackup(){
+  const data={version:1,exportedAt:new Date().toISOString(),todos,events,notes,trash};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`efficiencyCC_backup_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.json`;
+  a.click();URL.revokeObjectURL(a.href);closeBackup();
+}
+function importBackup(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.version||!Array.isArray(data.todos)){alert('格式不正確，請選擇效率CC匯出的備份檔');return}
+      if(!confirm(`確定要還原備份？\n匯出時間：${new Date(data.exportedAt).toLocaleString('zh-TW')}\n待辦 ${data.todos.length} 筆、行程 ${data.events.length} 筆、筆記 ${data.notes.length} 篇\n\n⚠️ 目前資料將被覆蓋`))return;
+      todos=data.todos||[];events=data.events||[];notes=data.notes||[];trash=data.trash||[];
+      saveAll();chips();checkUncat();
+      if(cur==='todos')rTodos();
+      if(cur==='cal')rCal();
+      if(cur==='notes')rNotes();
+      closeBackup();alert('✅ 還原成功！');
+    }catch{alert('讀取失敗，請確認檔案格式正確');}
+  };
+  reader.readAsText(file);e.target.value='';
 }
 
 chips();rTodos();checkUncat();scheduleAll();updateTrashBadge();
