@@ -336,12 +336,7 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
           <input class="finp ftime" type="time" id="eTime" value="09:00">
         </div>
         <input class="finp" id="eNote" placeholder="備註（選填）">
-        <div class="form-sublbl">分類</div>
-        <div class="cat-sel" id="catSel">
-          <button type="button" class="cat-opt work selected" data-cat="work" onclick="selCat('work')">💼 Work</button>
-          <button type="button" class="cat-opt personal" data-cat="personal" onclick="selCat('personal')">🏠 TJM</button>
-          <button type="button" class="cat-opt other" data-cat="other" onclick="selCat('other')">📌 Other</button>
-        </div>
+        <input class="finp" id="eLabel" placeholder="標籤（選填，例如：工作、家庭）">
         <div class="remind-row">
           <input type="checkbox" id="eRemind">
           <label for="eRemind">🔔 提前提醒</label>
@@ -354,11 +349,8 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
         </div>
         <button class="add-btn" onclick="addEM()">新增行程</button>
       </div>
-      <div class="filter-row">
+      <div id="filterRow" class="filter-row">
         <button class="filter-btn active" onclick="filterCat('all')">全部</button>
-        <button class="filter-btn" onclick="filterCat('work')">💼 Work</button>
-        <button class="filter-btn" onclick="filterCat('personal')">🏠 TJM</button>
-        <button class="filter-btn" onclick="filterCat('other')">📌 Other</button>
       </div>
       <div id="eCon"></div>
     </div>
@@ -561,6 +553,13 @@ function filterCat(cat){
   });
   rCal();
 }
+function buildFilterRow(){
+  // collect unique labels
+  const labels=[...new Set(events.map(e=>e.calendarName).filter(Boolean))];
+  const row=gid('filterRow');
+  row.innerHTML=`<button class="filter-btn ${filterEvCat==='all'?'active':''}" onclick="filterCat('all')">全部</button>`
+    +labels.map(l=>`<button class="filter-btn ${filterEvCat===l?'active':''}" onclick="filterCat(${JSON.stringify(l)})">${esc(l)}</button>`).join('');
+}
 function exportICS(ev){
   const d=ev.date.replace(/-/g,''),t=ev.time?ev.time.replace(':','')+'00':'000000';
   const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//效率CC//EN\r\nBEGIN:VEVENT\r\nUID:${genId()}@cc\r\nDTSTAMP:${d}T${t}Z\r\nDTSTART:${d}T${t}\r\nSUMMARY:${ev.title}\r\nDESCRIPTION:${ev.note||''}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
@@ -569,15 +568,16 @@ function exportICS(ev){
 function addEM(){
   const title=gid('eTitle').value.trim();
   if(!title)return;
-  const ev={id:genId(),title,date:gid('eDate').value,time:gid('eTime').value,note:gid('eNote').value,category:selEvCat,remind:gid('eRemind').checked,remindMin:parseInt(gid('eRemindMin').value),created:Date.now()};
+  const labelVal=gid('eLabel').value.trim();
+  const ev={id:genId(),title,date:gid('eDate').value,time:gid('eTime').value,note:gid('eNote').value,category:'custom',calendarName:labelVal||null,remind:gid('eRemind').checked,remindMin:parseInt(gid('eRemindMin').value),created:Date.now()};
   events=[...events,ev].sort((a,b)=>a.date.localeCompare(b.date));
   scheduleNotif(ev);
-  gid('eTitle').value='';gid('eNote').value='';gid('eRemind').checked=false;
+  gid('eTitle').value='';gid('eNote').value='';gid('eLabel').value='';gid('eRemind').checked=false;
   saveAll();chips();rCal();
 }
 function rCal(){
   const c=gid('eCon');
-  let fl=filterEvCat==='all'?events:events.filter(e=>e.category===filterEvCat);
+  let fl=filterEvCat==='all'?events:events.filter(e=>e.calendarName===filterEvCat);
   if(!fl.length){c.innerHTML='<div class="empty">📅 還沒有任何行程</div>';return}
   const tE=fl.filter(e=>e.date===today),up=fl.filter(e=>e.date>today),past=fl.filter(e=>e.date<today);
   let h='';
@@ -588,9 +588,9 @@ function rCal(){
 }
 function eHTML(ev,cls){
   const d=new Date(ev.date+'T00:00:00'),col=cls==='today'?'var(--blue)':'var(--lav)',cat=ev.category||'work';
-  const catBadge=ev.fromGcal&&ev.calendarName
+  const catBadge=ev.calendarName
     ?`<span class="cat-tag" style="background:#e8eef8;color:#5060a0">${esc(ev.calendarName)}</span>`
-    :`<span class="cat-tag ${CAT_EV_CLS[cat]}">${CAT_EV[cat]}</span>`;
+    :'';
   return`<div class="ev-card ${cls}">
     <div class="ev-date"><div class="ev-day" style="color:${col}">${d.getDate()}</div><div class="ev-wd">${d.toLocaleDateString('zh-TW',{weekday:'short'})}</div></div>
     <div class="ev-info">
