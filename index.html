@@ -191,6 +191,23 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 /* Google Calendar Sync */
+.gcal-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px}
+.gcal-status{flex:1;font-size:12px;color:var(--text2)}
+.gcal-btn{border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.gcal-connect{background:linear-gradient(135deg,#c4daf0,#7ab0e0);color:var(--text)}
+.gcal-sync{background:var(--mint-soft);color:var(--mint)}
+.gcal-disconnect{background:var(--sand);color:var(--text3);font-size:11px}
+.gcal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gcal-dot.connected{background:#4caf8a}
+.gcal-dot.disconnected{background:var(--text3)}
+/* Calendar selector */
+.gcal-selector{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.gcal-sel-title{font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.gcal-sel-sync{background:linear-gradient(135deg,#c4daf0,#7ab0e0);border:none;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text)}
+.gcal-cal-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer}
+.gcal-cal-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
+.gcal-cal-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.gcal-cal-name{font-size:13px;color:var(--text)}
 .gcal-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:12px}
 .gcal-status{flex:1;font-size:12px;color:var(--text2)}
 .gcal-btn{border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -302,6 +319,14 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
         <div class="gcal-dot disconnected" id="gcalDot"></div>
         <div class="gcal-status" id="gcalStatus">未連接 Google 行事曆</div>
         <button class="gcal-btn gcal-connect" id="gcalBtn" onclick="gcalToggle()">連接</button>
+      </div>
+      <!-- Calendar selector (shown after connect) -->
+      <div class="gcal-selector" id="gcalSelector" style="display:none">
+        <div class="gcal-sel-title">
+          <span>選擇要同步的日曆</span>
+          <button class="gcal-sel-sync" onclick="gcalFetch()">🔄 立即同步</button>
+        </div>
+        <div id="gcalCalList"></div>
       </div>
       <div class="ev-form">
         <div class="form-lbl">＋ 新增行程</div>
@@ -728,12 +753,55 @@ function gcalUpdateUI(connected){
     status.textContent='已連接 Google 行事曆';
     btn.textContent='中斷連接';
     btn.className='gcal-btn gcal-disconnect';
+    gcalLoadCalendars();
   } else {
     dot.className='gcal-dot disconnected';
     status.textContent='未連接 Google 行事曆';
     btn.textContent='連接';
     btn.className='gcal-btn gcal-connect';
+    gid('gcalSelector').style.display='none';
   }
+}
+
+async function gcalLoadCalendars(){
+  // fetch list of all calendars
+  try{
+    const r = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList',{
+      headers:{Authorization:'Bearer '+gcalToken.token}
+    });
+    if(r.status===401){gcalDisconnect();return;}
+    const data = await r.json();
+    const cals = (data.items||[]).filter(c=>c.accessRole!=='freeBusyReader');
+    // load saved selection
+    let saved = [];
+    try{saved=JSON.parse(localStorage.getItem('cc_gcal_cals')||'[]');}catch{}
+    // render
+    const list = gid('gcalCalList');
+    list.innerHTML = cals.map(cal=>{
+      const checked = saved.length===0 || saved.includes(cal.id);
+      const color = cal.backgroundColor||'#7ab0e0';
+      return `<label class="gcal-cal-item">
+        <input type="checkbox" value="${cal.id}" ${checked?'checked':''} onchange="gcalSaveSel()">
+        <div class="gcal-cal-color" style="background:${color}"></div>
+        <div class="gcal-cal-name">${cal.summary||cal.id}</div>
+      </label>`;
+    }).join('');
+    gid('gcalSelector').style.display='block';
+    if(saved.length===0){
+      // save all as default
+      localStorage.setItem('cc_gcal_cals',JSON.stringify(cals.map(c=>c.id)));
+    }
+  }catch(e){console.log(e);}
+}
+
+function gcalSaveSel(){
+  const boxes = gid('gcalCalList').querySelectorAll('input[type=checkbox]');
+  const sel = [...boxes].filter(b=>b.checked).map(b=>b.value);
+  localStorage.setItem('cc_gcal_cals',JSON.stringify(sel));
+}
+
+function gcalGetSelectedCals(){
+  try{return JSON.parse(localStorage.getItem('cc_gcal_cals')||'[]');}catch{return[];}
 }
 
 async function gcalFetch(){
@@ -745,27 +813,32 @@ async function gcalFetch(){
     const now = new Date();
     const timeMin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
     const timeMax = new Date(now.getFullYear(), now.getMonth()+6, 0).toISOString();
-    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=100`;
-    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + gcalToken.token } });
-    if(r.status === 401) { gcalDisconnect(); return; }
-    const data = await r.json();
-    const gcalEvents = (data.items||[]).map(item => ({
-      id: 'gcal_' + item.id,
-      title: item.summary || '（無標題）',
-      date: (item.start.dateTime||item.start.date||'').slice(0,10),
-      time: item.start.dateTime ? item.start.dateTime.slice(11,16) : '',
-      note: item.description||'',
-      category: 'work',
-      remind: false,
-      remindMin: 30,
-      fromGcal: true,
-      created: new Date(item.created||Date.now()).getTime()
-    }));
-    // merge: remove old gcal events, add new ones
-    events = events.filter(e => !e.fromGcal);
-    events = [...events, ...gcalEvents].sort((a,b)=>a.date.localeCompare(b.date));
-    saveAll(); chips(); rCal();
-    gid('gcalStatus').textContent = `已同步 ${gcalEvents.length} 個行程`;
+    const selectedCals = gcalGetSelectedCals();
+    if(!selectedCals.length){gid('gcalStatus').textContent='請先選擇要同步的日曆';gcalSyncing=false;return;}
+    let allEvents = [];
+    for(const calId of selectedCals){
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=200`;
+      const r = await fetch(url,{headers:{Authorization:'Bearer '+gcalToken.token}});
+      if(r.status===401){gcalDisconnect();return;}
+      const data = await r.json();
+      const evs = (data.items||[]).map(item=>({
+        id:'gcal_'+item.id,
+        title:item.summary||'（無標題）',
+        date:(item.start.dateTime||item.start.date||'').slice(0,10),
+        time:item.start.dateTime?item.start.dateTime.slice(11,16):'',
+        note:item.description||'',
+        category:'work',
+        remind:false,
+        remindMin:30,
+        fromGcal:true,
+        created:new Date(item.created||Date.now()).getTime()
+      }));
+      allEvents = [...allEvents, ...evs];
+    }
+    events = events.filter(e=>!e.fromGcal);
+    events = [...events,...allEvents].sort((a,b)=>a.date.localeCompare(b.date));
+    saveAll();chips();rCal();
+    gid('gcalStatus').textContent = `已同步 ${allEvents.length} 個行程`;
   } catch(e) {
     gid('gcalStatus').textContent = '同步失敗，請重試';
   }
