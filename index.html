@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="效率CC">
 <meta name="theme-color" content="#c4daf0">
 <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjNGRhZjAiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YWIwZTAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFwcGxlIENvbG9yIEVtb2ppLFNlZ29lIFVJIEVtb2ppLHNhbnMtc2VyaWYiPiYjMTI3ODAwOzwvdGV4dD48L3N2Zz4=">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
@@ -189,6 +190,16 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
+/* Google Calendar Sync */
+.gcal-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:12px}
+.gcal-status{flex:1;font-size:12px;color:var(--text2)}
+.gcal-btn{border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.gcal-connect{background:linear-gradient(135deg,#c4daf0,#7ab0e0);color:var(--text)}
+.gcal-sync{background:var(--mint-soft);color:var(--mint)}
+.gcal-disconnect{background:var(--sand);color:var(--text3);font-size:11px}
+.gcal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gcal-dot.connected{background:#4caf8a}
+.gcal-dot.disconnected{background:var(--text3)}
 /* Backup modal */
 .backup-overlay{position:fixed;inset:0;background:rgba(58,58,82,0.35);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
 .backup-modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:520px;box-shadow:0 -4px 30px rgba(0,0,0,0.1)}
@@ -286,7 +297,13 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 
     <!-- CALENDAR -->
     <div class="panel" id="p-cal" style="display:none">
-      <div class="ev-form" style="margin-top:4px">
+      <!-- Google Calendar Sync Bar -->
+      <div class="gcal-bar" style="margin-top:4px">
+        <div class="gcal-dot disconnected" id="gcalDot"></div>
+        <div class="gcal-status" id="gcalStatus">未連接 Google 行事曆</div>
+        <button class="gcal-btn gcal-connect" id="gcalBtn" onclick="gcalToggle()">連接</button>
+      </div>
+      <div class="ev-form">
         <div class="form-lbl">＋ 新增行程</div>
         <input class="finp" id="eTitle" placeholder="行程標題">
         <div class="frow">
@@ -668,6 +685,98 @@ function closeDropdown(){
   gid('dropMenu').style.display='none';
   gid('dropOverlay').style.display='none';
   gid('dropArrow').classList.remove('open');
+}
+
+// GOOGLE CALENDAR SYNC
+const GCAL_CLIENT_ID = '458414521287-ovvcjsh9qk3fl3kcc9j7uj37bq0sl129.apps.googleusercontent.com';
+const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+let gcalToken = null;
+let gcalSyncing = false;
+
+try { gcalToken = JSON.parse(localStorage.getItem('cc_gcal_token')||'null'); } catch {}
+
+function gcalToggle(){
+  if(gcalToken) { gcalDisconnect(); } else { gcalConnect(); }
+}
+
+function gcalConnect(){
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GCAL_CLIENT_ID,
+    scope: GCAL_SCOPE,
+    callback: (resp) => {
+      if(resp.error) { alert('連接失敗：' + resp.error); return; }
+      gcalToken = { token: resp.access_token, expiry: Date.now() + resp.expires_in*1000 };
+      localStorage.setItem('cc_gcal_token', JSON.stringify(gcalToken));
+      gcalUpdateUI(true);
+      gcalFetch();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function gcalDisconnect(){
+  if(!confirm('確定要中斷 Google 行事曆連接？'))return;
+  gcalToken = null;
+  localStorage.removeItem('cc_gcal_token');
+  gcalUpdateUI(false);
+}
+
+function gcalUpdateUI(connected){
+  const dot=gid('gcalDot'), status=gid('gcalStatus'), btn=gid('gcalBtn');
+  if(connected){
+    dot.className='gcal-dot connected';
+    status.textContent='已連接 Google 行事曆';
+    btn.textContent='中斷連接';
+    btn.className='gcal-btn gcal-disconnect';
+  } else {
+    dot.className='gcal-dot disconnected';
+    status.textContent='未連接 Google 行事曆';
+    btn.textContent='連接';
+    btn.className='gcal-btn gcal-connect';
+  }
+}
+
+async function gcalFetch(){
+  if(!gcalToken) return;
+  if(gcalSyncing) return;
+  gcalSyncing = true;
+  gid('gcalStatus').textContent = '同步中...';
+  try {
+    const now = new Date();
+    const timeMin = new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString();
+    const timeMax = new Date(now.getFullYear(), now.getMonth()+3, 0).toISOString();
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=100`;
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + gcalToken.token } });
+    if(r.status === 401) { gcalDisconnect(); return; }
+    const data = await r.json();
+    const gcalEvents = (data.items||[]).map(item => ({
+      id: 'gcal_' + item.id,
+      title: item.summary || '（無標題）',
+      date: (item.start.dateTime||item.start.date||'').slice(0,10),
+      time: item.start.dateTime ? item.start.dateTime.slice(11,16) : '',
+      note: item.description||'',
+      category: 'work',
+      remind: false,
+      remindMin: 30,
+      fromGcal: true,
+      created: new Date(item.created||Date.now()).getTime()
+    }));
+    // merge: remove old gcal events, add new ones
+    events = events.filter(e => !e.fromGcal);
+    events = [...events, ...gcalEvents].sort((a,b)=>a.date.localeCompare(b.date));
+    saveAll(); chips(); rCal();
+    gid('gcalStatus').textContent = `已同步 ${gcalEvents.length} 個行程`;
+  } catch(e) {
+    gid('gcalStatus').textContent = '同步失敗，請重試';
+  }
+  gcalSyncing = false;
+}
+
+// init gcal UI
+if(gcalToken && gcalToken.expiry > Date.now()) {
+  gcalUpdateUI(true);
+} else if(gcalToken) {
+  gcalToken = null; localStorage.removeItem('cc_gcal_token');
 }
 
 // BACKUP & RESTORE
