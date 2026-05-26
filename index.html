@@ -588,11 +588,14 @@ function rCal(){
 }
 function eHTML(ev,cls){
   const d=new Date(ev.date+'T00:00:00'),col=cls==='today'?'var(--blue)':'var(--lav)',cat=ev.category||'work';
+  const catBadge=ev.fromGcal&&ev.calendarName
+    ?`<span class="cat-tag" style="background:#e8eef8;color:#5060a0">${esc(ev.calendarName)}</span>`
+    :`<span class="cat-tag ${CAT_EV_CLS[cat]}">${CAT_EV[cat]}</span>`;
   return`<div class="ev-card ${cls}">
     <div class="ev-date"><div class="ev-day" style="color:${col}">${d.getDate()}</div><div class="ev-wd">${d.toLocaleDateString('zh-TW',{weekday:'short'})}</div></div>
     <div class="ev-info">
       <div class="ev-title">${ev.remind?'🔔 ':''}${esc(ev.title)}</div>
-      <span class="cat-tag ${CAT_EV_CLS[cat]}">${CAT_EV[cat]}</span>
+      ${catBadge}
       <div class="ev-meta">${d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}${ev.time?' · '+ev.time:''}${ev.note?' · '+esc(ev.note):''}</div>
     </div>
     <div class="ev-actions">
@@ -821,13 +824,17 @@ async function gcalFetch(){
       const r = await fetch(url,{headers:{Authorization:'Bearer '+gcalToken.token}});
       if(r.status===401){gcalDisconnect();return;}
       const data = await r.json();
+      // get calendar display name
+      const calName = (gid('gcalCalList').querySelector(`input[value="${calId}"]`)
+        ?.closest('.gcal-cal-item')?.querySelector('.gcal-cal-name')?.textContent) || calId;
       const evs = (data.items||[]).map(item=>({
         id:'gcal_'+item.id,
         title:item.summary||'（無標題）',
         date:(item.start.dateTime||item.start.date||'').slice(0,10),
         time:item.start.dateTime?item.start.dateTime.slice(11,16):'',
         note:item.description||'',
-        category:'work',
+        category:'gcal',
+        calendarName: calName,
         remind:false,
         remindMin:30,
         fromGcal:true,
