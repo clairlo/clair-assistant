@@ -507,14 +507,16 @@ document.getElementById('hDate').textContent=new Date().toLocaleDateString('zh-T
 function gid(id){return document.getElementById(id)}
 function genId(){return Math.random().toString(36).slice(2,9)}
 function saveAll(){
+  const now = Date.now();
   localStorage.setItem(ST,JSON.stringify(todos));
   localStorage.setItem(SE,JSON.stringify(events));
   localStorage.setItem(SN,JSON.stringify(notes));
   localStorage.setItem(STR,JSON.stringify(trash));
+  localStorage.setItem('cc_lastSave', now);
   // push to Firebase if logged in
   if(window._fbUser && window._fbSave) {
     fbIgnoreNext = true;
-    window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
+    window._fbSave({todos, events, notes, trash, updatedAt: now});
   }
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -836,22 +838,42 @@ window.fbUpdateUI = function(user) {
 
 window.fbOnData = function(data) {
   if(fbIgnoreNext){fbIgnoreNext=false;return;}
-  if(!data) return;
-  // merge cloud data to local
-  if(data.todos) todos = data.todos;
-  if(data.events) events = data.events;
-  if(data.notes) notes = data.notes;
-  if(data.trash) trash = data.trash;
-  // save to localStorage too
-  localStorage.setItem(ST,JSON.stringify(todos));
-  localStorage.setItem(SE,JSON.stringify(events));
-  localStorage.setItem(SN,JSON.stringify(notes));
-  localStorage.setItem(STR,JSON.stringify(trash));
-  chips(); checkUncat();
-  if(cur==='todos') rTodos();
-  if(cur==='cal') rCal();
-  if(cur==='notes') rNotes();
-  gid('fbStatus').textContent = '已同步 · ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+  if(!data) {
+    // cloud is empty → upload local data to cloud
+    if(window._fbSave && (todos.length||events.length||notes.length)) {
+      fbIgnoreNext = true;
+      window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
+      gid('fbStatus').textContent = '本機資料已上傳至雲端 ✅';
+    }
+    return;
+  }
+  const cloudTime = data.updatedAt || 0;
+  const localTime = parseInt(localStorage.getItem('cc_lastSave')||'0');
+
+  if(cloudTime > localTime) {
+    // cloud is newer → use cloud data
+    if(data.todos) todos = data.todos;
+    if(data.events) events = data.events;
+    if(data.notes) notes = data.notes;
+    if(data.trash) trash = data.trash;
+    localStorage.setItem(ST,JSON.stringify(todos));
+    localStorage.setItem(SE,JSON.stringify(events));
+    localStorage.setItem(SN,JSON.stringify(notes));
+    localStorage.setItem(STR,JSON.stringify(trash));
+    localStorage.setItem('cc_lastSave', cloudTime);
+    chips(); checkUncat();
+    if(cur==='todos') rTodos();
+    if(cur==='cal') rCal();
+    if(cur==='notes') rNotes();
+    gid('fbStatus').textContent = '已同步 · ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+  } else {
+    // local is newer or equal → upload local to cloud
+    if(window._fbSave) {
+      fbIgnoreNext = true;
+      window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
+      gid('fbStatus').textContent = '已同步 · ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    }
+  }
 };
 
 function fbToggle() {
