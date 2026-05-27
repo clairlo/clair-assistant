@@ -188,6 +188,20 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 .restore-btn{background:none;border:1.5px solid var(--blue-mid);border-radius:8px;padding:3px 8px;font-size:11px;color:var(--blue);cursor:pointer;font-family:inherit;white-space:nowrap}
 .perm-del-btn{background:none;border:none;color:#e0a0a0;cursor:pointer;font-size:17px;padding:0 2px;line-height:1}
 
+/* Todo edit modal */
+.edit-overlay{position:fixed;inset:0;background:rgba(58,58,82,0.35);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.edit-modal{background:var(--surface);border-radius:20px;padding:24px 20px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,0.12)}
+.edit-modal-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.edit-inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;font-family:inherit;margin-bottom:14px;transition:border-color .2s}
+.edit-inp:focus{border-color:var(--blue-mid)}
+.edit-pri-row{display:flex;gap:8px;margin-bottom:18px}
+.edit-pri-btn{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;text-align:center}
+.edit-pri-btn.sel-high{background:#fde8e8;border-color:#e07880;color:#b05060;font-weight:700}
+.edit-pri-btn.sel-medium{background:#fdf5dc;border-color:#e8c060;color:#906020;font-weight:700}
+.edit-pri-btn.sel-low{background:#e0f2e8;border-color:#88c0a4;color:#3a7050;font-weight:700}
+.edit-actions{display:flex;gap:8px}
+.edit-save{flex:1;padding:11px;border-radius:12px;background:linear-gradient(135deg,#c4daf0,#7ab0e0);border:none;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.edit-cancel{padding:11px 18px;border-radius:12px;background:var(--sand);border:none;color:var(--text2);font-size:14px;cursor:pointer;font-family:inherit}
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 /* Google Calendar Sync */
@@ -508,7 +522,7 @@ function rTodos(){
         else{ci.forEach(t=>{
           const d=Math.floor((Date.now()-t.created)/86400000);
           const od=d>=3?`<div class="overdue">⚠️ ${d}天</div>`:'';
-          h+=`<div class="todo-card" style="border-top:2.5px solid ${PC[p]}"><div class="todo-card-top"><button class="todo-check" style="border-color:${PC[p]}" onclick="doneT('${t.id}')"></button><div class="todo-title">${esc(t.title)}</div><button class="todo-del" onclick="delT('${t.id}')">×</button></div><div class="todo-date">${new Date(t.created).toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}${od?'&nbsp;'+od:''}</div></div>`;
+          h+=`<div class="todo-card" style="border-top:2.5px solid ${PC[p]}"><div class="todo-card-top"><button class="todo-check" style="border-color:${PC[p]}" onclick="doneT('${t.id}')"></button><div class="todo-title" onclick="openEdit('${t.id}')" style="cursor:pointer">${esc(t.title)}</div><button class="todo-del" onclick="openEdit('${t.id}')" style="color:var(--blue);opacity:.6;font-size:14px" title="編輯">✏️</button><button class="todo-del" onclick="delT('${t.id}')">×</button></div><div class="todo-date">${new Date(t.created).toLocaleDateString('zh-TW',{month:'short',day:'numeric'})}${od?'&nbsp;'+od:''}</div></div>`;
         });}
         h+='</div>';
       });
@@ -859,6 +873,42 @@ if(gcalToken && gcalToken.expiry > Date.now()) {
   gcalToken = null; localStorage.removeItem('cc_gcal_token');
 }
 
+// TODO EDIT
+let editingTodoId = null;
+let editPriVal = 'medium';
+
+function openEdit(id){
+  const todo = todos.find(t=>t.id===id);
+  if(!todo) return;
+  editingTodoId = id;
+  editPriVal = todo.priority;
+  gid('editInp').value = todo.title;
+  // set priority buttons
+  ['high','medium','low'].forEach(p=>{
+    const btn = gid('ep-'+p);
+    btn.className = 'edit-pri-btn' + (p===editPriVal?' sel-'+p:'');
+  });
+  gid('editOverlay').style.display = 'flex';
+  setTimeout(()=>gid('editInp').focus(),50);
+}
+function closeEdit(){
+  gid('editOverlay').style.display = 'none';
+  editingTodoId = null;
+}
+function setEditPri(p){
+  editPriVal = p;
+  ['high','medium','low'].forEach(pri=>{
+    gid('ep-'+pri).className = 'edit-pri-btn' + (pri===p?' sel-'+p:'');
+  });
+}
+function saveEdit(){
+  const title = gid('editInp').value.trim();
+  if(!title) return;
+  todos = todos.map(t => t.id===editingTodoId ? {...t, title, priority:editPriVal} : t);
+  saveAll(); chips(); checkUncat(); rTodos();
+  closeEdit();
+}
+
 // BACKUP & RESTORE
 function openBackup(){gid('backupOverlay').style.display='flex'}
 function closeBackup(){gid('backupOverlay').style.display='none'}
@@ -891,6 +941,23 @@ function importBackup(e){
 
 chips();rTodos();checkUncat();scheduleAll();updateTrashBadge();
 </script>
+<!-- Todo Edit Modal -->
+<div class="edit-overlay" id="editOverlay" style="display:none" onclick="if(event.target===this)closeEdit()">
+  <div class="edit-modal">
+    <div class="edit-modal-title">✏️ 編輯待辦</div>
+    <input class="edit-inp" id="editInp" placeholder="待辦內容">
+    <div class="edit-pri-row">
+      <button class="edit-pri-btn" id="ep-high" onclick="setEditPri('high')">🔴 高</button>
+      <button class="edit-pri-btn" id="ep-medium" onclick="setEditPri('medium')">🟡 中</button>
+      <button class="edit-pri-btn" id="ep-low" onclick="setEditPri('low')">🟢 低</button>
+    </div>
+    <div class="edit-actions">
+      <button class="edit-save" onclick="saveEdit()">儲存</button>
+      <button class="edit-cancel" onclick="closeEdit()">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- Dropdown Menu (fixed position) -->
 <div id="dropOverlay" style="display:none;position:fixed;inset:0;z-index:998" onclick="closeDropdown()"></div>
 <div class="dropdown-menu" id="dropMenu" style="display:none;position:fixed;top:80px;left:18px;z-index:999">
