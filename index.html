@@ -54,17 +54,17 @@
     currentUser = user;
     if(user) {
       window._fbUser = user;
-      // update UI
-      if(window.fbUpdateUI) window.fbUpdateUI(user);
-      // listen for real-time changes
+      setTimeout(()=>{ if(window.fbUpdateUI) window.fbUpdateUI(user); }, 100);
+      // listen for real-time changes from Firestore
       onSnapshot(doc(db, 'users', user.uid, 'data', 'main'), (snap) => {
-        if(snap.exists() && window.fbOnData) {
-          window.fbOnData(snap.data());
+        if(snap.exists()) {
+          setTimeout(()=>{ if(window.fbOnData) window.fbOnData(snap.data()); }, 150);
         }
       });
     } else {
       window._fbUser = null;
-      if(window.fbUpdateUI) window.fbUpdateUI(null);
+      window._fbSave = null;
+      setTimeout(()=>{ if(window.fbUpdateUI) window.fbUpdateUI(null); }, 100);
     }
   });
 </script>
@@ -511,6 +511,11 @@ function saveAll(){
   localStorage.setItem(SE,JSON.stringify(events));
   localStorage.setItem(SN,JSON.stringify(notes));
   localStorage.setItem(STR,JSON.stringify(trash));
+  // push to Firebase if logged in
+  if(window._fbUser && window._fbSave) {
+    fbIgnoreNext = true;
+    window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
+  }
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function timeAgo(ts){
@@ -858,15 +863,7 @@ function fbToggle() {
   }
 }
 
-// Override saveAll to also push to Firebase
-const _origSaveAll = saveAll;
-function saveAll() {
-  _origSaveAll();
-  if(window._fbUser && window._fbSave) {
-    fbIgnoreNext = true;
-    window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
-  }
-}
+// Firebase save handled inside saveAll directly
 
 // GOOGLE CALENDAR SYNC
 const GCAL_CLIENT_ID = '458414521287-ovvcjsh9qk3fl3kcc9j7uj37bq0sl129.apps.googleusercontent.com';
