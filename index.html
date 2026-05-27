@@ -10,6 +10,64 @@
 <meta name="theme-color" content="#c4daf0">
 <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjNGRhZjAiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YWIwZTAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFwcGxlIENvbG9yIEVtb2ppLFNlZ29lIFVJIEVtb2ppLHNhbnMtc2VyaWYiPiYjMTI3ODAwOzwvdGV4dD48L3N2Zz4=">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyAXpBB6hbZiTPdi6RQGtCygG9AZpMpfZw4",
+  authDomain: "efficiency-cc-5bfee.firebaseapp.com",
+  projectId: "efficiency-cc-5bfee",
+  storageBucket: "efficiency-cc-5bfee.firebasestorage.app",
+  messagingSenderId: "443693452536",
+  appId: "1:443693452536:web:60bb0cfba27cedb69ebf0d"
+};
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+  let syncTimeout = null;
+
+  // expose to global scope
+  window._fbAuth = auth;
+  window._fbDb = db;
+  window._fbProvider = provider;
+  window._fbSignIn = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch(e) { alert('登入失敗：' + e.message); }
+  };
+  window._fbSignOut = () => signOut(auth);
+  window._fbSave = async (data) => {
+    if(!currentUser) return;
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid, 'data', 'main'), data);
+    } catch(e) { console.error('Firebase save error:', e); }
+  };
+
+  // Auth state listener
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if(user) {
+      window._fbUser = user;
+      // update UI
+      if(window.fbUpdateUI) window.fbUpdateUI(user);
+      // listen for real-time changes
+      onSnapshot(doc(db, 'users', user.uid, 'data', 'main'), (snap) => {
+        if(snap.exists() && window.fbOnData) {
+          window.fbOnData(snap.data());
+        }
+      });
+    } else {
+      window._fbUser = null;
+      if(window.fbUpdateUI) window.fbUpdateUI(null);
+    }
+  });
+</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
@@ -205,6 +263,14 @@ body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;ba
 input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 /* Google Calendar Sync */
+/* Firebase Sync Bar */
+.fb-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px}
+.fb-status{flex:1;font-size:12px;color:var(--text2)}
+.fb-btn{border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.fb-login{background:linear-gradient(135deg,#c4daf0,#7ab0e0);color:var(--text)}
+.fb-logout{background:var(--sand);color:var(--text3);font-size:11px}
+.fb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text3)}
+.fb-dot.on{background:#4caf8a}
 .gcal-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px}
 .gcal-status{flex:1;font-size:12px;color:var(--text2)}
 .gcal-btn{border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -222,6 +288,14 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
 .gcal-cal-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
 .gcal-cal-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .gcal-cal-name{font-size:13px;color:var(--text)}
+/* Firebase Sync Bar */
+.fb-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:10px}
+.fb-status{flex:1;font-size:12px;color:var(--text2)}
+.fb-btn{border:none;border-radius:10px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.fb-login{background:linear-gradient(135deg,#c4daf0,#7ab0e0);color:var(--text)}
+.fb-logout{background:var(--sand);color:var(--text3);font-size:11px}
+.fb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text3)}
+.fb-dot.on{background:#4caf8a}
 .gcal-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;margin-bottom:12px}
 .gcal-status{flex:1;font-size:12px;color:var(--text2)}
 .gcal-btn{border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
@@ -280,6 +354,13 @@ input[type=time]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer}
     <button class="tab active" onclick="go('todos')">✅ 待辦</button>
     <button class="tab" onclick="go('cal')">📅 行程</button>
     <button class="tab" onclick="go('notes')">📝 筆記</button>
+  </div>
+
+  <!-- Firebase Sync Bar -->
+  <div class="fb-bar" style="margin:10px 16px 0" id="fbBar">
+    <div class="fb-dot" id="fbDot"></div>
+    <div class="fb-status" id="fbStatus">未登入 · 資料僅存本機</div>
+    <button class="fb-btn fb-login" id="fbBtn" onclick="fbToggle()">Google 登入同步</button>
   </div>
 
   <div class="content">
@@ -727,6 +808,64 @@ function closeDropdown(){
   gid('dropMenu').style.display='none';
   gid('dropOverlay').style.display='none';
   gid('dropArrow').classList.remove('open');
+}
+
+// FIREBASE SYNC
+let fbSyncing = false;
+let fbIgnoreNext = false;
+
+window.fbUpdateUI = function(user) {
+  const dot=gid('fbDot'), status=gid('fbStatus'), btn=gid('fbBtn');
+  if(user) {
+    dot.className='fb-dot on';
+    status.textContent='已登入 · ' + (user.displayName||user.email);
+    btn.textContent='登出';
+    btn.className='fb-btn fb-logout';
+  } else {
+    dot.className='fb-dot';
+    status.textContent='未登入 · 資料僅存本機';
+    btn.textContent='Google 登入同步';
+    btn.className='fb-btn fb-login';
+  }
+};
+
+window.fbOnData = function(data) {
+  if(fbIgnoreNext){fbIgnoreNext=false;return;}
+  if(!data) return;
+  // merge cloud data to local
+  if(data.todos) todos = data.todos;
+  if(data.events) events = data.events;
+  if(data.notes) notes = data.notes;
+  if(data.trash) trash = data.trash;
+  // save to localStorage too
+  localStorage.setItem(ST,JSON.stringify(todos));
+  localStorage.setItem(SE,JSON.stringify(events));
+  localStorage.setItem(SN,JSON.stringify(notes));
+  localStorage.setItem(STR,JSON.stringify(trash));
+  chips(); checkUncat();
+  if(cur==='todos') rTodos();
+  if(cur==='cal') rCal();
+  if(cur==='notes') rNotes();
+  gid('fbStatus').textContent = '已同步 · ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+};
+
+function fbToggle() {
+  if(window._fbUser) {
+    if(confirm('確定要登出嗎？資料會保留在本機。'))
+      window._fbSignOut && window._fbSignOut();
+  } else {
+    window._fbSignIn && window._fbSignIn();
+  }
+}
+
+// Override saveAll to also push to Firebase
+const _origSaveAll = saveAll;
+function saveAll() {
+  _origSaveAll();
+  if(window._fbUser && window._fbSave) {
+    fbIgnoreNext = true;
+    window._fbSave({todos, events, notes, trash, updatedAt: Date.now()});
+  }
 }
 
 // GOOGLE CALENDAR SYNC
